@@ -4,7 +4,7 @@ import numpy as np
 import mujoco
 import mujoco.viewer
 
-m = mujoco.MjModel.from_xml_path('UR5+gripper/UR5gripper.xml')
+m = mujoco.MjModel.from_xml_path('UR5+gripper/UR5gripper_v3.xml')
 d = mujoco.MjData(m)
 UR5_chain = Chain.from_urdf_file('UR5+gripper/ur5_gripper.urdf')
 
@@ -105,16 +105,17 @@ initial_position(d)
 
 # simulate
 with mujoco.viewer.launch_passive(m, d, key_callback=key_callback) as viewer:
-    print(f'tool position: {d.body('tool0').xpos}')
+    print(f'tool position: {d.body('robotiq_85_base_link').xpos}')
     viewer.cam.trackbodyid = 0
     viewer.cam.type = mujoco.mjtCamera.mjCAMERA_TRACKING
     viewer.cam.elevation = -30
     viewer.cam.azimuth = -135
     viewer.cam.distance = 3
     viewer.sync()
-    move_end_effector(UR5_chain, [1, 1, 1], initial_coordinates=positions)
-    time.sleep(10.0)
+    move_end_effector(UR5_chain, [0.5, 0.5, 0.5], initial_coordinates=positions)
+    time.sleep(5.0)
     while viewer.is_running():
         mujoco.mj_step(m,d)
+        print(f'tool position: {d.body('robotiq_85_base_link').xpos}')
         viewer.sync()
 
