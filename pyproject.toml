@@ -1,0 +1,11 @@
+[build-system]
+requires= ["setuptools"]
+
+[project]
+name="manipulator_env"
+version="0.0.1"
+dependencies=[
+  "gymnasium",
+  "pygame==2.6.1",
+  "pre-commit",
+]

@@ -4,7 +4,7 @@ import numpy as np
 import mujoco
 import mujoco.viewer
 
-m = mujoco.MjModel.from_xml_path('UR5+gripper/UR5gripper_v3.xml')
+m = mujoco.MjModel.from_xml_path('UR5+gripper/UR5gripper_v3_2.xml')
 d = mujoco.MjData(m)
 UR5_chain = Chain.from_urdf_file('UR5+gripper/ur5_gripper.urdf')
 
@@ -16,7 +16,18 @@ setpoints = {
         "wrist_2": -1.57,
         "wrist_3": -3.14,
         }
+
+setpoints_2 = {
+        "shoulder_pan_2": -1.57,
+        "shoulder_lift_2": -1.57,
+        "forearm_2": 1.57,
+        "wrist_1_2": -1.57,
+        "wrist_2_2": -1.57,
+        "wrist_3_2": -3.14,
+        }
+
 positions = [0] + [setpoints[x] for x in setpoints] + [0]
+positions_2 = [0] + [setpoints_2[x] for x in setpoints_2] + [0]
 
 def calculate_joint_angles(chain, target_position, initial_position):
     """
@@ -81,14 +92,30 @@ def initial_position(data):
     data.qpos[3] = setpoints["wrist_1"]
     data.qpos[4] = setpoints["wrist_2"]
     data.qpos[5] = setpoints["wrist_3"]
+    
+    data.qpos[8] = setpoints["shoulder_pan"]
+    data.qpos[9] = setpoints["shoulder_lift"]
+    data.qpos[10] = setpoints["forearm"]
+    data.qpos[11] = setpoints["wrist_1"]
+    data.qpos[12] = setpoints["wrist_2"]
+    data.qpos[13] = setpoints["wrist_3"]
 
 def mycontroller(model, data):
+    # 1st manipulator where end effector moves
     data.ctrl[0] = -21*(data.qpos[0]-setpoints["shoulder_pan"])-.11*data.qvel[0] 
     data.ctrl[1] = -30*(data.qpos[1]-setpoints["shoulder_lift"])-.1*data.qvel[1] 
     data.ctrl[2] = -15*(data.qpos[2]-setpoints["forearm"])-.05*data.qvel[2] 
     data.ctrl[3] = -21*(data.qpos[3]-setpoints["wrist_1"])-.11*data.qvel[3] 
     data.ctrl[4] = -15*(data.qpos[4]-setpoints["wrist_2"])-.01*data.qvel[4] 
     data.ctrl[5] = -7.5*(data.qpos[5]-setpoints["wrist_3"]) 
+   
+    # 2nd manipulator that stays in fixed position
+    data.ctrl[7] = -21*(data.qpos[8]-setpoints_2["shoulder_pan_2"])-.11*data.qvel[8] 
+    data.ctrl[8] = -30*(data.qpos[9]-setpoints_2["shoulder_lift_2"])-.1*data.qvel[9] 
+    data.ctrl[9] = -15*(data.qpos[10]-setpoints_2["forearm_2"])-.05*data.qvel[10] 
+    data.ctrl[10] = -21*(data.qpos[11]-setpoints_2["wrist_1_2"])-.11*data.qvel[11] 
+    data.ctrl[11] = -15*(data.qpos[12]-setpoints_2["wrist_2_2"])-.01*data.qvel[12] 
+    data.ctrl[12] = -7.5*(data.qpos[13]-setpoints_2["wrist_3_2"]) 
 
 def key_callback(keycode):
     if chr(keycode) == ' ':
